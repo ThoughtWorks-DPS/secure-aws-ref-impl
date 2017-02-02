@@ -8,6 +8,6 @@ ACCESS_TOKEN=$(curl -H "content-type: application/json" -X POST https://$AUTH0_T
 
 APP_ID=$(curl -H "content-type: application/json" -H "authorization: Bearer $ACCESS_TOKEN" -X POST https://manderso.auth0.com/api/v2/clients -d "{\"name\": \"AWS Federated ID\"}" | jq -r '.client_id')
 
-curl -H "content-type: application/json" -H "authorization: Bearer $ACCESS_TOKEN" -X PATCH https://$AUTH0_TENANT.auth0.com/api/v2/clients/$APP_ID -d "{\"callbacks\": [\"https://signin.aws.amazon.com/saml\"],\"addons\": {\"samlp\": $(cat diff.json)}}"
+curl -H "content-type: application/json" -H "authorization: Bearer $ACCESS_TOKEN" -X PATCH https://$AUTH0_TENANT.auth0.com/api/v2/clients/$APP_ID -d "{\"callbacks\": [\"https://signin.aws.amazon.com/saml\"],\"addons\": {\"samlp\": $(cat aws-samlp-payload.json)}}"
 
 curl -H "content-type: application/json" -H "authorization: Bearer $ACCESS_TOKEN" https://$AUTH0_TENANT.auth0.com/samlp/metadata/$APP_ID > metadata.xml
