@@ -1,2 +1,4 @@
 *.pyc
 terraform.tfstate.backup
+auth0payload.json
+metadata.xml
