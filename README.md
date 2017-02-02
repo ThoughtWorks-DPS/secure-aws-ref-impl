@@ -10,7 +10,7 @@ by Moritz. Will add more to the README later.
 ## Manual Steps
 1. Create admin user through AWS console.
 2. Delete root access keys
-3. Put AWS admin user access keys in ~/.aws/credentials under role 'secure-aws-admin'
+3. Put AWS admin user access keys in ~/.aws/credentials under role 'secure-aws-admin' (See https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html#cli-multiple-profiles for an example.  Replace user2 with secure-aws-admin.)
 4. Get the JSON payload for OpenID Connect auth negotiation from Auth0. If you're signed in, you can
 go to https://manage.auth0.com/#/apis/, then click the _Auth0 Management API_ link, then go to the _Test_ tab.
 (If you haven't before you may have to create a test client now.)
