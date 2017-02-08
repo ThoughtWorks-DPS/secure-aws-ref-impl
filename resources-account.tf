@@ -29,25 +29,7 @@ EOF
 resource "aws_iam_role" "cross_account" {
     provider = "aws.prod"
     name = "CrossAccountSignin"
-    assume_role_policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Principal": {
-        "AWS": "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"
-      },
-      "Action": "sts:AssumeRole",
-      "Condition": {
-        "Bool": {
-          "aws:MultiFactorAuthPresent": "true"
-        }
-      }
-    }
-  ]
-}
-EOF
+    assume_role_policy = "${data.aws_iam_policy_document.assume_role_policy.json}"
 }
 
 resource "aws_iam_policy_attachment" "cross_account" {

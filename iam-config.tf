@@ -6,7 +6,20 @@ provider "aws" {
 data "aws_caller_identity" "current" {
     provider = "aws.admin"
 }
-
+data "aws_iam_policy_document" "assume_role_policy" {
+    statement {
+        actions = [ "sts:AssumeRole" ]
+        principals {
+            type = "AWS"
+            identifiers = ["arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"]
+        }
+        condition {
+            test = "Bool"
+            variable = "aws:MultiFactorAuthPresent"
+            values = ["true"]
+        }
+    }
+}
 output "iam_account_id" {
   value = "${data.aws_caller_identity.current.account_id}"
 }
