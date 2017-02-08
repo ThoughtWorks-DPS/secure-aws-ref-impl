@@ -20,5 +20,5 @@ except IAM.
 
 
 ## Using what you've got
-To assume the role on the prod account, you will need to be logged in as the "dev" user and then visit
-https://signin.aws.amazon.com/switchrole?account=[prodAccountId]&roleName=CrossAccountSignin
+To assume a role on the prod account, you will need to be logged in as one of the defined users and then visit
+https://signin.aws.amazon.com/switchrole?account=[prodAccountId]&roleName=[RoleForThatUser]

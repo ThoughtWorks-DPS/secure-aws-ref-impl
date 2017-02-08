@@ -4,9 +4,9 @@ provider "aws" {
     profile = "secure-aws-account2"
 }
 
-resource "aws_iam_policy" "cross_account_base" {
+resource "aws_iam_policy" "prod_power_user" {
     provider = "aws.prod"
-    name = "CrossAccountBasePolicy"
+    name = "PowerUser"
     path = "/"
     policy = <<EOF
 {
@@ -26,15 +26,26 @@ resource "aws_iam_policy" "cross_account_base" {
 EOF
 }
 
-resource "aws_iam_role" "cross_account" {
+resource "aws_iam_role" "prod_ops" {
     provider = "aws.prod"
-    name = "CrossAccountSignin"
+    name = "Ops"
     assume_role_policy = "${data.aws_iam_policy_document.assume_role_policy.json}"
 }
-
-resource "aws_iam_policy_attachment" "cross_account" {
+resource "aws_iam_role" "prod_dev_admin" {
     provider = "aws.prod"
-    name = "cross_account_attachment"
-    roles = ["${aws_iam_role.cross_account.name}"]
-    policy_arn = "${aws_iam_policy.cross_account_base.arn}"
+    name = "DevAdmin"
+    assume_role_policy = "${data.aws_iam_policy_document.assume_role_policy.json}"
+}
+resource "aws_iam_policy_attachment" "prod_ops" {
+    provider = "aws.prod"
+    name = "prod_ops_attachment"
+    roles = ["${aws_iam_role.prod_ops.name}"]
+    policy_arn = "${aws_iam_policy.prod_power_user.arn}"
+}
+
+resource "aws_iam_policy_attachment" "prod_dev_admin" {
+    provider = "aws.prod"
+    name = "prod_dev_admin_attachment"
+    roles = ["${aws_iam_role.prod_dev_admin.name}"]
+    policy_arn = "arn:aws:iam::aws:policy/ReadOnlyAccess"
 }
