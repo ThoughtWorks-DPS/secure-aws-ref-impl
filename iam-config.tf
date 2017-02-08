@@ -42,6 +42,7 @@ resource "aws_iam_group" "operators" {
     name = "Operators"
 }
 
+# These policies are the only parts of this file that need to be updated for additional environments
 resource "aws_iam_group_policy" "dev_admins" {
     provider = "aws.admin"
     name = "DevAdmins"
