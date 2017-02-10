@@ -1,7 +1,7 @@
 provider "aws" {
     alias = "prod"
     region = "us-west-2"
-    profile = "secure-aws-account2"
+    profile = "secure-aws-prod"
 }
 
 resource "aws_iam_policy" "prod_power_user" {

@@ -53,7 +53,11 @@ resource "aws_iam_group_policy" "dev_admins" {
     "Statement": {
         "Effect": "Allow",
         "Action": "sts:AssumeRole",
-        "Resource": "${aws_iam_role.prod_dev_admin.arn}"
+        "Resource": [
+            "${aws_iam_role.prod_dev_admin.arn}",
+            "${aws_iam_role.preprod_dev_admin.arn}",
+            "${aws_iam_role.infra_dev_admin.arn}"
+        ]
     }
 }
 EOF
@@ -69,7 +73,11 @@ resource "aws_iam_group_policy" "operators" {
     "Statement": {
         "Effect": "Allow",
         "Action": "sts:AssumeRole",
-        "Resource": "${aws_iam_role.prod_ops.arn}"
+        "Resource": [
+            "${aws_iam_role.prod_ops.arn}",
+            "${aws_iam_role.preprod_ops.arn}",
+            "${aws_iam_role.infra_ops.arn}"
+        ]
     }
 }
 EOF
