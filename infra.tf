@@ -17,13 +17,7 @@ resource "aws_iam_role" "infra_dev_admin" {
 resource "aws_iam_policy_attachment" "infra_ops" {
     provider = "aws.infra"
     name = "infra_ops_attachment"
-    roles = ["${aws_iam_role.infra_ops.name}"]
+    roles = ["${aws_iam_role.infra_ops.name}", "${aws_iam_role.infra_dev_admin.name}"]
     policy_arn = "arn:aws:iam::aws:policy/PowerUserAccess"
 }
 
-resource "aws_iam_policy_attachment" "infra_dev_admin" {
-    provider = "aws.infra"
-    name = "infra_dev_admin_attachment"
-    roles = ["${aws_iam_role.infra_dev_admin.name}"]
-    policy_arn = "arn:aws:iam::aws:policy/PowerUserAccess"
-}
