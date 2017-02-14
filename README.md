@@ -131,7 +131,9 @@ The ops users should now be ready to go. You can test that they have permissions
 
 Because the user has permission to assume role, and the role has permission to view hosts, it allows create the bucket
 
-A note on the complexity of the above: you would certainly want to wrap this basic functionality up in scripts for onboarding and role assumption, but for the time being, that is an exercise left to the reader. For more information on MFA with the CLI, see the [AWS instructions](https://aws.amazon.com/premiumsupport/knowledge-center/authenticate-mfa-cli/).
+A note on the complexity of the above: you would certainly want to wrap this basic functionality up in scripts for onboarding and role assumption;
+an example of such a script is provided in this repo. For more information on MFA with the CLI, see the
+[AWS instructions](https://aws.amazon.com/premiumsupport/knowledge-center/authenticate-mfa-cli/).
 
 ## Creating and testing a DevAdmins user
 Add a dev users with the following commands:
