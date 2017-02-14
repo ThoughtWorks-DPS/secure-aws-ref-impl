@@ -2,3 +2,5 @@
 terraform.tfstate*
 auth0payload.json
 metadata.xml
+.credentials*
+mfa.png
