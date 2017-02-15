@@ -1,6 +1,6 @@
 # Secure AWS Configuration Reference implementation
 
-working off of [this article](https://thoughtworks.jiveon.com/people/mheiber/blog/2016/06/23/using-aws-with-security-as-a-first-class-citizen)
+working off of [this article](https://www.thoughtworks.com/insights/blog/using-aws-security-first-class-citizen)
 by Moritz. Will add more to the README later.
 
 This aims to illustrate setting up a nice secure AWS configuration, with separate accounts for IAM and resource manipulation and all that good stuff.
