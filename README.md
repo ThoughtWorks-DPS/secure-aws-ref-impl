@@ -51,160 +51,50 @@ we will need them to do some set up for testing below.
     aws_secret_access_key = jfjmcmas...
 
 ## Creating and testing an Operators user
-Now that you have your account set up, you will need to add some users to test that everything is working correctly. 
-Add an ops users with the following commands:
+You can manually create users, but we have provided a simple shell script to wrap the various calls needed for this.
+To begin creating a user in the Operators group, simply call:
 
-        # Creates the user
-        ➜ aws iam create-user --user-name ops --profile secure-aws-admin
-       
-       {
-            "User": {
-                "UserName": "ops",
-                "Path": "/",
-                "CreateDate": "2017-02-14T16:55:37.228Z",
-                "UserId": "AIDA32D....",
-                "Arn": "arn:aws:iam::123123123123:user/ops"
-            }
-        }
+       ➜ ./create_user.sh ops Operators
 
-        # Adds them to the group
-        ➜ aws iam add-user-to-group --user-name ops --group-name Operators --profile secure-aws-admin
+Assuming this runs successfully, you should now have an image of a QR code open, a file called .credentials-ops that you can source
+at any time so that you are using that account, and a line printed out in your terminal window explaining what you need to do next
+(if the QR code does not open, you should be able to find it at /tmp/ops\_MFA.png.  At this point, you need to scan the QR code in
+mfa.png with your MFA application (e.g. google authenticator), and then execute the command printed out when you ran create\_user.sh
+with two consecutive authentication codes from your MFA application.
 
-        # Creates their credentials
-        ➜ aws iam create-access-key --user-name ops --profile secure-aws-admin
-        
-        {
-            "AccessKey": {
-                "UserName": "ops",
-                "Status": "Active",
-                "CreateDate": "2017-02-14T16:57:39.444Z",
-                "SecretAccessKey": "FLK32D...",
-                "AccessKeyId": "AKIA436U..."
-            }
-        }
+The ops users should now be ready to go and able to assume roles in your other accounts. You can do this manually with `aws sts assume-role`,
+but we also provide a script to wrap these, albeit one that requires some configuration before you use it. Check `assume_role.sh` for more
+details on configuration. Once you've set the various necessary parameters in `assume_role.sh` you can assume a role in another account as
+follows:
 
-Create a script called .credentials-ops for later use based on the above output: 
+        ➜ . ./.credentials-ops
+        ➜ . ./assume_role.sh <current-mfa-token>
 
-    export AWS_ACCESS_KEY_ID=AKIA43IU...
-    export AWS_SECRET_ACCESS_KEY=FLKJKJD...
+At this point your shell will be set up to use the temporary credentials for the target account. You can validate this by running these
+commands:
 
-You can source this at any point to become your ops user, so it should be readable only by you. Now you need to enable MFA.
+        ➜ aws iam list-accounts
+        ➜ aws s3 mb s3://test-bucket-1123123123
 
-        #Creates an MFA device, this adds a file called mfa.png which you need to
-        #scan with your MFA application
-        ➜ aws iam create-virtual-mfa-device --virtual-mfa-device-name OpsTestMFA --outfile ./mfa.png \
-            --bootstrap-method QRCodePNG --profile secure-aws-admin
+The first command should show a root user for the target account, as shown by the account number in the ARN. For the second call,
+because the user has permission to assume role, and the role has power user access , it allows you create the bucket
 
-        {
-            "VirtualMFADevice": {
-                "SerialNumber": "arn:aws:iam::412412412412:mfa/OpsTestMFA"
-            }
-        }
-
-At this point, you need to scan the QR code in mfa.png with your MFA application (e.g. google authenticator).
-
-        #Enable the MFA device with a sequence of two auth codes from the application
-        ➜ aws iam enable-mfa-device --user-name ops --serial-number arn:aws:iam::412412412412:mfa/OpsTestMFA \
-            --authentication-code-1 444703 --authentication-code-2 438360 --profile secure-aws-admin
-
-The ops users should now be ready to go. You can test that they have permissions with the following commands:
-
-        ➜ bash -c '. ./.credentials-ops; aws sts assume-role --role-arn arn:aws:iam::123123123123:role/Ops \
-            --role-session-name ops-test --serial-number arn:aws:iam::412412412412:mfa/OpsTestMFA --token-code 034267'
-
-        {
-            "AssumedRoleUser": {
-                "AssumedRoleId": "AROAIRX...:ops-test",
-                "Arn": "arn:aws:sts::123123123123:assumed-role/Ops/ops-test"
-            },
-            "Credentials": {
-                "SecretAccessKey": "CNn4k...",
-                "SessionToken": "FQoDYXdz...",
-                "Expiration": "2017-02-14T20:28:04Z",
-                "AccessKeyId": "ASIAI..."
-            }
-        }
-
-        ➜ AWS_SESSION_TOKEN=FQoDYXdz... AWS_SECRET_ACCESS_KEY=CNn4k... AWS_ACCESS_KEY_ID=ASIAI... aws s3 mb s3://test-bucket-1123123123
-        
-        make_bucket: test-bucket-1123123123
-
-Because the user has permission to assume role, and the role has permission to view hosts, it allows create the bucket
-
-A note on the complexity of the above: you would certainly want to wrap this basic functionality up in scripts for onboarding and role assumption;
-an example of such a script is provided in this repo. For more information on MFA with the CLI, see the
-[AWS instructions](https://aws.amazon.com/premiumsupport/knowledge-center/authenticate-mfa-cli/).
+For more information on MFA with the CLI, see the [AWS instructions](https://aws.amazon.com/premiumsupport/knowledge-center/authenticate-mfa-cli/).
 
 ## Creating and testing a DevAdmins user
-Add a dev users with the following commands:
+Add a dev user duplicating the above process but with the following commands:
 
-       ➜ aws iam create-user --user-name dev --profile secure-aws-admin
+       ➜ ./create_user.sh dev DevAdmins
        
-       {
-            "User": {
-                "UserName": "dev",
-                "Path": "/",
-                "CreateDate": "2017-02-14T16:55:37.228Z",
-                "UserId": "AIDA5AD....",
-                "Arn": "arn:aws:iam::123123123123:user/dev"
-            }
-        }
+Note that this will create files .credentials-dev and /tmp/dev\_MFA.png. To test that this works,
+we can perform the same steps we did with the ops user.
 
-        ➜ aws iam add-user-to-group --user-name dev --group-name DevAdmins --profile secure-aws-admin
+        ➜ . ./.credentials-ops
+        ➜ . ./assume_role.sh <current-mfa-token>
+        ➜ aws iam list-accounts
+        ➜ aws s3 mb s3://test-bucket-1123123123
 
-        ➜ aws iam create-access-key --user-name dev --profile secure-aws-admin
-        
-        {
-            "AccessKey": {
-                "UserName": "dev",
-                "Status": "Active",
-                "CreateDate": "2017-02-14T16:57:39.444Z",
-                "SecretAccessKey": "FLKJKJD...",
-                "AccessKeyId": "AKIA43IU..."
-            }
-        }
-
-As before, create a script that only you can read called .credentials-dev for later use based on the above output: 
-
-    export AWS_ACCESS_KEY_ID=AKIA43IU...
-    export AWS_SECRET_ACCESS_KEY=FLKJKJD...
-
-Enable MFA for this user.
-
-    ➜ aws iam create-virtual-mfa-device --virtual-mfa-device-name DevTestMFA --outfile ./mfa.png \
-        --bootstrap-method QRCodePNG --profile secure-aws-admin
-
-    {
-        "VirtualMFADevice": {
-            "SerialNumber": "arn:aws:iam::412412412412:mfa/DevTestMFA"
-        }
-    }
-
-    ➜ aws iam enable-mfa-device --user-name dev --serial-number arn:aws:iam::412412412412:mfa/DevTestMFA \
-        --authentication-code-1 614180 --authentication-code-2 724697 --profile secure-aws-admin
-
-Now test:
-    ➜ bash -c '. ./.credentials-dev; aws sts assume-role --role-arn arn:aws:iam::123123123123:role/DevAdmin \
-        --role-session-name dev-test --serial-number arn:aws:iam::412412412412:mfa/DevTestMFA --token-code 465005'
-
-        {
-            "AssumedRoleUser": {
-                "AssumedRoleId": "AROA...:dev-test",
-                "Arn": "arn:aws:sts::123123123123:assumed-role/DevAdmin/dev-test"
-            },
-            "Credentials": {
-                "SecretAccessKey": "Tu5GTG...",
-                "SessionToken": "FQoDYXd...",
-                "Expiration": "2017-02-14T21:03:07Z",
-                "AccessKeyId": "ASIAIU..."
-            }
-        }
-
-        ➜ AWS_SESSION_TOKEN=FQoDYXd... AWS_SECRET_ACCESS_KEY=Tu5GTG... AWS_ACCESS_ID=ASIAI... aws s3 mb s3://test-bucket
-        
-        make_bucket failed: s3://test-bucket An error occurred (AccessDenied) when calling the CreateBucket operation: Access Denied
-
-The call to make the bucket fails because the user doesn't have permission, as expected.
+Again, the aws iam command should show that you are in the target account, but the call to make the bucket should fail because the user doesn't have permission.
 
 If you would like to assume a role with any of the accounts using the console, you will need to be logged in as one of the defined users and then visit 
 https://signin.aws.amazon.com/switchrole?account=[accountId]&roleName=[RoleForThatUser]. 
