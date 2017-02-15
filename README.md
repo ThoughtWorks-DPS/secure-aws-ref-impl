@@ -68,7 +68,7 @@ details on configuration. Once you've set the various necessary parameters in `a
 follows:
 
         ➜ . ./.credentials-ops
-        ➜ . ./assume_role.sh <current-mfa-token>
+        ➜ . ./assume_role.sh <target-account-number> Ops <current-mfa-token>
 
 At this point your shell will be set up to use the temporary credentials for the target account. You can validate this by running these
 commands:
@@ -90,7 +90,7 @@ Note that this will create files .credentials-dev and /tmp/dev\_MFA.png. To test
 we can perform the same steps we did with the ops user.
 
         ➜ . ./.credentials-ops
-        ➜ . ./assume_role.sh <current-mfa-token>
+        ➜ . ./assume_role.sh <target-account-number> DevAdmin <current-mfa-token>
         ➜ aws iam list-accounts
         ➜ aws s3 mb s3://test-bucket-1123123123
 
