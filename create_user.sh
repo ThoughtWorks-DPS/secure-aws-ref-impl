@@ -20,7 +20,7 @@ ACCESS_KEY_JSON=$(aws iam create-access-key \
 
 touch .credentials-$USER_NAME
 echo -e "export AWS_ACCESS_KEY_ID=$(echo $ACCESS_KEY_JSON | jq -r ".AccessKeyId")"\
-    "\nexport_AWS_SECRET_ACCESS_KEY=$(echo $ACCESS_KEY_SON | jq -r ".SecretAccessKey")"\
+    "\nexport AWS_SECRET_ACCESS_KEY=$(echo $ACCESS_KEY_JSON | jq -r ".SecretAccessKey")"\
     > .credentials-$USER_NAME
 
 MFA_SERIAL=$(aws iam create-virtual-mfa-device \
@@ -31,7 +31,6 @@ MFA_SERIAL=$(aws iam create-virtual-mfa-device \
     | jq -r ".VirtualMFADevice.SerialNumber")
 
 set +e
-
 
 [[ "$OSTYPE" == "darwin"* ]] && open /tmp/${USER_NAME}_MFA.png || xdg-open /tmp/${USER_NAME}_MFA.png
 

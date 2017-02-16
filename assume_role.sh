@@ -20,9 +20,9 @@ ROLE_TO_ASSUME=$2
 OTP_TOKEN=$3
 
 CREDENTIALS_JSON=$(aws sts assume-role \
-    --role-arn arn:aws:iam::$ACCOUNT_TO_ACCESS:role/$ROLE_TO_ASSUME \
+    --role-arn arn:aws:iam::${ACCOUNT_TO_ACCESS}:role/$ROLE_TO_ASSUME \
     --role-session-name foo \
-    --serial-number arn:aws:iam::$ACCOUNT:mfa/$MFA_DEVICE_NAME \
+    --serial-number arn:aws:iam::${ACCOUNT}:mfa/$MFA_DEVICE_NAME \
     --token-code $OTP_TOKEN \
     | jq ".Credentials")
 

@@ -55,12 +55,27 @@ You can manually create users, but we have provided a simple shell script to wra
 To begin creating a user in the Operators group, simply call:
 
        ➜ ./create_user.sh ops Operators
+       {
+                "User": {
+                        "UserName": "ops",
+                        "Path": "/",
+                        "CreateDate": "2017-02-16T01:21:21.998Z",
+                        "UserId": "AIDA....",
+                        "Arn": "arn:aws:iam::123123123:user/ops"
+                }
+        }
+
+        after you scan this QR code (/tmp/ops.png), record two consecutive auth codes and run the following command
+        aws iam enable-mfa-device --user-name ops --serial-number arn:aws:iam::123123123:mfa/ops --profile secure-aws-admin --authentication-code-1 <first-code> --authentication-code-2 <second-code>
+
 
 Assuming this runs successfully, you should now have an image of a QR code open, a file called .credentials-ops that you can source
 at any time so that you are using that account, and a line printed out in your terminal window explaining what you need to do next
 (if the QR code does not open, you should be able to find it at /tmp/ops\_MFA.png.  At this point, you need to scan the QR code in
 mfa.png with your MFA application (e.g. google authenticator), and then execute the command printed out when you ran create\_user.sh
 with two consecutive authentication codes from your MFA application.
+
+        ➜ aws iam enable-mfa-device --user-name ops --serial-number arn:aws:iam::123123123:mfa/ops --profile secure-aws-admin --authentication-code-1 12345 --authentication-code-2 2345
 
 The ops users should now be ready to go and able to assume roles in your other accounts. You can do this manually with `aws sts assume-role`,
 but we also provide a script to wrap these, albeit one that requires some configuration before you use it. Check `assume_role.sh` for more
@@ -73,11 +88,9 @@ follows:
 At this point your shell will be set up to use the temporary credentials for the target account. You can validate this by running these
 commands:
 
-        ➜ aws iam list-accounts
         ➜ aws s3 mb s3://test-bucket-1123123123
 
-The first command should show a root user for the target account, as shown by the account number in the ARN. For the second call,
-because the user has permission to assume role, and the role has power user access , it allows you create the bucket
+Because the user has permission to assume role, and the role has power user access, it allows you create the bucket.
 
 For more information on MFA with the CLI, see the [AWS instructions](https://aws.amazon.com/premiumsupport/knowledge-center/authenticate-mfa-cli/).
 
@@ -91,10 +104,9 @@ we can perform the same steps we did with the ops user.
 
         ➜ . ./.credentials-ops
         ➜ . ./assume_role.sh <target-account-number> DevAdmin <current-mfa-token>
-        ➜ aws iam list-accounts
-        ➜ aws s3 mb s3://test-bucket-1123123123
+        ➜ aws s3 mb s3://test-bucket-11231231235
 
-Again, the aws iam command should show that you are in the target account, but the call to make the bucket should fail because the user doesn't have permission.
+The call to make the bucket should fail because the user doesn't have permission.
 
 If you would like to assume a role with any of the accounts using the console, you will need to be logged in as one of the defined users and then visit 
 https://signin.aws.amazon.com/switchrole?account=[accountId]&roleName=[RoleForThatUser]. 
