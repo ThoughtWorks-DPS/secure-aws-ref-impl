@@ -19,7 +19,8 @@ ACCESS_KEY_JSON=$(aws iam create-access-key \
     | jq ".AccessKey")
 
 touch .credentials-$USER_NAME
-echo -e "export AWS_ACCESS_KEY_ID=$(echo $ACCESS_KEY_JSON | jq -r ".AccessKeyId")"\
+echo -e "unset AWS_SESSION_TOKEN"\
+    "\nexport AWS_ACCESS_KEY_ID=$(echo $ACCESS_KEY_JSON | jq -r ".AccessKeyId")"\
     "\nexport AWS_SECRET_ACCESS_KEY=$(echo $ACCESS_KEY_JSON | jq -r ".SecretAccessKey")"\
     > .credentials-$USER_NAME
 
@@ -37,4 +38,5 @@ set +e
 echo "after you scan this QR code (/tmp/${USER_NAME}_MFA.png), record two consecutive auth codes and run the following command"
 echo "aws iam enable-mfa-device --user-name $USER_NAME --serial-number $MFA_SERIAL" \
     "--profile secure-aws-admin --authentication-code-1 <first-code> --authentication-code-2 <second-code>"
-
+echo ""
+echo "The credentials for your new user can sourced from .credentials-$USER_NAME"
