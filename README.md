@@ -6,19 +6,25 @@ by Moritz.
 This aims to illustrate setting up a nice secure AWS configuration, with separate accounts for IAM and resource manipulation and all that good stuff.
 Some parts can't be automated, so in the README we'll explain those bits.
 
-For the purposes of this example we use 4 separate AWS accounts, one each for IAM, infrastructure, preprod, and prod.
+## Prerequisites
+1. For the purposes of this example you will have to create 4 separate AWS accounts, one each for admin, infra, preprod, and prod.
+2. Install terraform
+3. Install AWS CLI
+4. Install jq for parsing the json objects
+
+
 
 ## Manual Steps
-1. [Create an admin user](https://docs.aws.amazon.com/IAM/latest/UserGuide/getting-started_create-admin-group.html) for each account.
+1. [Create an admin user](https://docs.aws.amazon.com/IAM/latest/UserGuide/getting-started_create-admin-group.html) for each account: IAM, infrastructure, preprod, and prod.
 This is important because you don't want to be using the root user to change these accounts.
 2. Put AWS admin user access keys for each account in ~/.aws/credentials. These should be added under the profiles `secure-aws-admin`, `secure-aws-prod`,
 `secure-aws-preprod`, and `secure-aws-infra`, corresponding to the purpose of each of the accounts. **A WORD OF WARNING:** Once you have established your account setup
-and have created personal users (or, ideally once SSO is set up), you will want to disable these bootstrap accounts for safety. For the time being, 
+and have created personal users (or, ideally once SSO is set up), you will want to disable these bootstrap accounts for safety. For the time being,
 we will need them to do some set up for testing below.
 
 (See https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html#cli-multiple-profiles for an example.  Replace user2 with secure-aws-admin.) When you're done, your aws files will look like this:
 
-.aws/config
+~/.aws/config
 
     [profile secure-aws-prod]
     region = us-west-2
@@ -32,7 +38,7 @@ we will need them to do some set up for testing below.
     [profile secure-aws-infra]
     region = us-west-2
 
-.aws/credentials
+~/.aws/credentials
 
     [secure-aws-prod]
     aws_access_key_id = AKIA1...
@@ -49,6 +55,8 @@ we will need them to do some set up for testing below.
     [secure-aws-infra]
     aws_access_key_id = AKIA4...
     aws_secret_access_key = jfjmcmas...
+
+3. Run `terraform apply` from this project's root folder
 
 ## Creating and testing an Operators user
 You can manually create users, but we have provided a simple shell script to wrap the various calls needed for this.
@@ -85,10 +93,11 @@ follows:
         ➜ . ./.credentials-ops
         ➜ . ./assume_role.sh <target-account-number> Ops <current-mfa-token>
 
-At this point your shell will be set up to use the temporary credentials for the target account. You can validate this by running these
-commands:
+At this point your shell will be set up to use the temporary credentials for the target account. You can validate this by running this
+command:
 
         ➜ aws s3 mb s3://test-bucket-1123123123
+        make_bucket: test-bucket-1123123123
 
 Because the user has permission to assume role, and the role has power user access, it allows you create the bucket.
 
@@ -98,17 +107,18 @@ For more information on MFA with the CLI, see the [AWS instructions](https://aws
 Add a dev user duplicating the above process but with the following commands:
 
        ➜ ./create_user.sh dev DevAdmins
-       
-Note that this will create files .credentials-dev and /tmp/dev\_MFA.png. To test that this works,
-we can perform the same steps we did with the ops user.
 
-        ➜ . ./.credentials-ops
+Note that this will create files .credentials-dev and /tmp/dev\_MFA.png. To test that this works,
+we can perform the same steps we did with the ops user. Note that you may need to run `unset AWS_SESSION_TOKEN` beforehand if you get an InvalidClientTokenId error.
+
+        ➜ . ./.credentials-dev
         ➜ . ./assume_role.sh <target-account-number> DevAdmin <current-mfa-token>
         ➜ aws s3 mb s3://test-bucket-11231231235
+        make_bucket failed: s3://test-bucket-1123123123 An error occurred (AccessDenied) when calling the CreateBucket operation: Access Denied
 
 The call to make the bucket should fail because the user doesn't have permission.
 
-If you would like to assume a role with any of the accounts using the console, you will need to be logged in as one of the defined users and then visit 
-https://signin.aws.amazon.com/switchrole?account=[accountId]&roleName=[RoleForThatUser]. 
-For this to work, you need to create [login profiles](http://docs.aws.amazon.com/cli/latest/reference/iam/create-login-profile.html) 
+If you would like to assume a role with any of the accounts using the console, you will need to be logged in as one of the defined users and then visit
+https://signin.aws.amazon.com/switchrole?account=[accountId]&roleName=[RoleForThatUser].
+For this to work, you need to create [login profiles](http://docs.aws.amazon.com/cli/latest/reference/iam/create-login-profile.html)
 for the user.
